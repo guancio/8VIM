@@ -23,4 +23,5 @@
     <!-- <integer name="SWITCH_TO_SELECTION_KEYPAD">-12</integer> -->
     <!-- <integer name="SWITCH_TO_EMOTICON_KEYBOARD">-13</integer> -->
     <!-- <integer name="HIDE_KEYBOARD">-14</integer> -->
+    <integer name="SMART_SPACE">-17</integer>
 </resources>

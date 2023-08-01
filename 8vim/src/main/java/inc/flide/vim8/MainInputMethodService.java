@@ -384,4 +384,25 @@ public class MainInputMethodService extends InputMethodService
     public void onClipboardHistoryChanged() {
         clipboardKeypadView.updateClipHistory();
     }
+
+    private String processSmartSpace() {
+        String multiTapSequence = " .,?!:@";
+
+        CharSequence text = inputConnection.getTextBeforeCursor(1, 0);
+        if (text == null)
+            return multiTapSequence.substring(0, 1);
+        if (text.length() <= 0)
+            return multiTapSequence.substring(0, 1);
+
+        int multiTapPos = multiTapSequence.indexOf(text.toString());
+        if (multiTapPos < 0)
+            return multiTapSequence.substring(0, 1);
+
+        inputConnection.deleteSurroundingTextInCodePoints(1, 0);
+        multiTapPos = (multiTapPos+1) % multiTapSequence.length();
+        return multiTapSequence.substring(multiTapPos, multiTapPos+1);
+    }
+    public void smartSpace() {
+        this.sendText(processSmartSpace());
+    }
 }

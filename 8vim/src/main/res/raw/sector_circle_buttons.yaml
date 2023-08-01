@@ -10,10 +10,11 @@ layers:
         - left
         - no_touch
       key_code: switch_to_number_keypad
-    - movement_sequence:
+    - type: input_key
+      movement_sequence:
         - inside_circle
         - no_touch
-      lower_case: " "
+      key_code: smart_space
     - type: input_key
       movement_sequence:
         - bottom
