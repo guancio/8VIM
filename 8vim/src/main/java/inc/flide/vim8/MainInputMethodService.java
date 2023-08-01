@@ -32,7 +32,11 @@ import inc.flide.vim8.views.NumberKeypadView;
 import inc.flide.vim8.views.SelectionKeypadView;
 import inc.flide.vim8.views.SymbolKeypadView;
 import inc.flide.vim8.views.mainkeyboard.MainKeyboardView;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class MainInputMethodService extends InputMethodService
         implements ClipboardManagerService.ClipboardHistoryListener {
@@ -48,6 +52,7 @@ public class MainInputMethodService extends InputMethodService
     private int shiftLockFlag;
     private int capsLockFlag;
     private int modifierFlags;
+    private final static  String [] multiTapSequence = {" ", ". ", ", ",  "? ", ".", "! ", ": ", "@"};
 
     public ClipboardManagerService getClipboardManagerService() {
         return clipboardManagerService;
@@ -386,21 +391,21 @@ public class MainInputMethodService extends InputMethodService
     }
 
     private String processSmartSpace() {
-        String multiTapSequence = " .,?!:@";
-
-        CharSequence text = inputConnection.getTextBeforeCursor(1, 0);
+        List<String> multiTapList = Arrays.asList(multiTapSequence);
+        Optional<Integer> largestOption = multiTapList.stream().map(String::length).max(Integer::compareTo);
+        int maxLength = largestOption.get();
+        CharSequence text = inputConnection.getTextBeforeCursor(maxLength, 0);
         if (text == null)
-            return multiTapSequence.substring(0, 1);
-        if (text.length() <= 0)
-            return multiTapSequence.substring(0, 1);
+            return multiTapSequence[0];
+        List<String> postfixes = multiTapList.stream().filter(s -> text.toString().endsWith(s)).collect(Collectors.toList());
+        if (postfixes.size() == 0)
+            return multiTapSequence[0];
 
-        int multiTapPos = multiTapSequence.indexOf(text.toString());
-        if (multiTapPos < 0)
-            return multiTapSequence.substring(0, 1);
-
-        inputConnection.deleteSurroundingTextInCodePoints(1, 0);
-        multiTapPos = (multiTapPos+1) % multiTapSequence.length();
-        return multiTapSequence.substring(multiTapPos, multiTapPos+1);
+        String longestPostfix = postfixes.stream().max(Comparator.comparingInt(String::length)).get();
+        int position = multiTapList.indexOf(longestPostfix);
+        position = (position + 1)%multiTapList.size();
+        inputConnection.deleteSurroundingTextInCodePoints(longestPostfix.length(), 0);
+        return multiTapList.get(position);
     }
     public void smartSpace() {
         this.sendText(processSmartSpace());
